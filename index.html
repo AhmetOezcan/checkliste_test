@@ -15,105 +15,50 @@
     canvas {
       border: 2px solid #000;
       cursor: crosshair;
-      touch-action: none; /* Verhindert Scrollen beim Zeichnen auf Touch-Geräten */
-    }
-    .controls {
-      margin: 10px 0;
     }
   </style>
 </head>
 <body>
   <h2>Zeichne auf dem Bild</h2>
-  <div class="controls">
-    <button id="resetBtn">Zurücksetzen</button>
-  </div>
   <canvas id="canvas"></canvas>
 
   <script>
     const img = new Image();
-    img.src = 'foto.png'; // Passe ggf. den Bildnamen an
+    img.src = 'foto.png'; // Benenne dein Bild so um oder passe es an
 
     const canvas = document.getElementById('canvas');
     const ctx = canvas.getContext('2d');
-    const resetBtn = document.getElementById('resetBtn');
-
-    function drawImage() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-    }
 
     img.onload = () => {
-      // Maximalbreite für bessere Darstellung auf kleinen Bildschirmen
-      const maxWidth = 600;
-      const scale = Math.min(1, maxWidth / img.width);
-      canvas.width = img.width * scale;
-      canvas.height = img.height * scale;
-      drawImage();
+      canvas.width = img.width;
+      canvas.height = img.height;
+      ctx.drawImage(img, 0, 0);
     };
 
     let isDrawing = false;
 
-    function getPos(e) {
-      const rect = canvas.getBoundingClientRect();
-      if (e.touches) {
-        return {
-          x: e.touches[0].clientX - rect.left,
-          y: e.touches[0].clientY - rect.top
-        };
-      } else {
-        return {
-          x: e.offsetX,
-          y: e.offsetY
-        };
-      }
-    }
-
-    function startDraw(x, y) {
+    canvas.addEventListener('mousedown', e => {
       isDrawing = true;
       ctx.beginPath();
-      ctx.moveTo(x, y);
-    }
+      ctx.moveTo(e.offsetX, e.offsetY);
+    });
 
-    function draw(x, y) {
+    canvas.addEventListener('mousemove', e => {
       if (isDrawing) {
-        ctx.lineTo(x, y);
+        ctx.lineTo(e.offsetX, e.offsetY);
         ctx.strokeStyle = 'red';
         ctx.lineWidth = 2;
         ctx.stroke();
       }
-    }
+    });
 
-    function stopDraw() {
+    canvas.addEventListener('mouseup', () => {
       isDrawing = false;
-    }
+    });
 
-    // Maus-Events
-    canvas.addEventListener('mousedown', e => {
-      const pos = getPos(e);
-      startDraw(pos.x, pos.y);
+    canvas.addEventListener('mouseout', () => {
+      isDrawing = false;
     });
-    canvas.addEventListener('mousemove', e => {
-      const pos = getPos(e);
-      draw(pos.x, pos.y);
-    });
-    canvas.addEventListener('mouseup', stopDraw);
-    canvas.addEventListener('mouseout', stopDraw);
-
-    // Touch-Events
-    canvas.addEventListener('touchstart', e => {
-      e.preventDefault();
-      const pos = getPos(e);
-      startDraw(pos.x, pos.y);
-    });
-    canvas.addEventListener('touchmove', e => {
-      e.preventDefault();
-      const pos = getPos(e);
-      draw(pos.x, pos.y);
-    });
-    canvas.addEventListener('touchend', stopDraw);
-
-    // Reset-Button
-    resetBtn.addEventListener('click', drawImage);
   </script>
 </body>
 </html>
